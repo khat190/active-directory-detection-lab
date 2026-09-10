@@ -60,7 +60,7 @@ Workstation information
 Source network address
 Timestamp
 
-A single Event ID 4625 is not sufficient to identify password spraying. The detection depends on correlating multiple events and identifying the broader authentication pattern.
+**A single Event ID 4625 is not sufficient to identify password spraying. The detection depends on correlating multiple events and identifying the broader authentication pattern.**
 
 **Splunk Analysis**
 
@@ -77,32 +77,32 @@ This allowed the failed authentication events to be examined in Splunk.
 **Account Analysis**
 
 To identify which accounts were targeted:
-
+```text
 index=endpoint host="AD-Server" EventCode=4625
 | stats count by Account_Name
-
+```
 This showed failed authentication activity across the simulated accounts.
 
 **Source Analysis**
 
 The events were then correlated by source:
-
+```text
 index=endpoint host="AD-Server" EventCode=4625
 | stats dc(Account_Name) as unique_accounts count by Source_Network_Address
 | sort - unique_accounts
-
+```
 The analysis showed multiple distinct accounts being targeted from the same source.
 
 **Detection**
 
 The final detection correlated failed authentication events within a 10-minute window:
-
+```text
 index=endpoint host="AD-Server" EventCode=4625
 | bin _time span=10m
 | stats dc(Account_Name) as unique_accounts values(Account_Name) as accounts count by _time Source_Network_Address
 | where unique_accounts >= 3
 Detection Logic
-
+```
 **The detection:**
 
 Filters for failed Windows authentication events.
@@ -141,9 +141,9 @@ Activity occurring within a defined time window
 This provided the basis for the password-spray detection and SIEM alert.
 
 MITRE ATT&CK Mapping
-
+```text
 T1110.003 — Password Spraying
-
+```
 The simulated behavior corresponds to the Password Spraying sub-technique under Brute Force.
 
 
